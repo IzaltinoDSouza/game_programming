@@ -122,19 +122,16 @@ public:
 			break;
 			case 'h':
 				help_menu();
+				goto user_try_again;
 			break;
 			default:
 				terminal_clear();
+				goto user_try_again;
 			break;
 		}
 	}
 	void ai_input()
-	{
-		size_t prev_x = 0;
-		size_t prev_y = 0;
-		
-		bool try_again = false;
-		
+	{		
 		ai_try_again:
 		
 		srand(time(NULL));
@@ -142,24 +139,17 @@ public:
 		srand(time(NULL));
 		size_t y = rand() % 3;
 		
-		if(try_again && x == prev_x && y == prev_y)
-		{
-			x = rand() % 3;
-			if(x == prev_x) goto ai_try_again;
-			try_again = false;
-		}
-		
 		if(m_grid.is_available(x,y))
 		{
 			m_grid.set_mark(x,y,Marks::O);
 		}else
 		{
-			try_again = true;
 			goto ai_try_again;
 		}
 	}
 	void update()
 	{
+		//grid is full with X and O
 		if(m_grid.no_more_available())
 		{
 			m_grid.reset();

@@ -20,120 +20,8 @@
 #define terminal_clear() system("cls")
 #endif
 
-enum class Marks
-{
-	EMPTY,
-	X,
-	O
-};
-class Grid
-{
-public:
-	Grid()
-	{
-		reset();
-	}
-	void reset()
-	{
-		for(size_t y = 0;y < 3;++y)
-		{
-			for(size_t x = 0;x < 3;++x)
-			{
-				m_grid[y][x] = Marks::EMPTY;
-			}
-		}
-	}
-	void set_mark(size_t offset,Marks mark)
-	{
-		m_grid[(offset-1) % 3][(offset-1) / 3] = mark;
-	}
-	void set_mark(size_t x,size_t y,Marks mark)
-	{
-		m_grid[y][x] = mark;
-	}
-	Marks get_mark(size_t x,size_t y) const
-	{
-		return m_grid[y][x];
-	}
-	bool is_available(size_t offset) const
-	{
-		return m_grid[(offset-1) % 3][(offset-1) / 3] == Marks::EMPTY;
-	}
-	bool is_available(size_t x,size_t y)
-	{
-		return m_grid[y][x] == Marks::EMPTY;
-	}
-	bool no_more_available() const
-	{
-		size_t total = 0;
-		for(size_t y = 0;y < 3;++y)
-		{
-			for(size_t x = 0;x < 3;++x)
-			{
-				if(m_grid[y][x] != Marks::EMPTY)
-					++total;
-			}
-		}
-		return total == 3*3;
-	}
-private:
-	Marks m_grid[3][3];
-};
-
-enum class TicTacToeState
-{
-	NONE,
-	X_WIN,
-	O_WIN,
-	DRAW
-};
-
-TicTacToeState check_state_winner_or_draw(const Grid & grid)
-{
-	//grid is full with X and O
-	if(grid.no_more_available()) return TicTacToeState::DRAW;
-	
-	//horizontal
-	for(size_t y = 0;y < 3;++y)
-	{
-		if(grid.get_mark(y,0) == grid.get_mark(y,1) &&
-		   grid.get_mark(y,0) == grid.get_mark(y,2))
-		{
-			if(grid.get_mark(y,0) == Marks::X)      return TicTacToeState::X_WIN;
-			else if(grid.get_mark(y,0) == Marks::O) return TicTacToeState::O_WIN;
-			
-		}
-	}
-
-	//vertical
-	for(size_t x = 0;x < 3;++x)
-	{
-		if(grid.get_mark(0,x) == grid.get_mark(1,x) &&
-		   grid.get_mark(0,x) == grid.get_mark(2,x))
-		{
-			if(grid.get_mark(0,x) == Marks::X)      return TicTacToeState::X_WIN;
-			else if(grid.get_mark(0,x) == Marks::O) return TicTacToeState::O_WIN;
-		}
-	}
-
-	//diagonal 1
-	if(grid.get_mark(0,0) == grid.get_mark(1,1) &&
-	   grid.get_mark(0,0) == grid.get_mark(2,2))
-	{
-		if(grid.get_mark(0,0) == Marks::X)      return TicTacToeState::X_WIN;
-		else if(grid.get_mark(0,0) == Marks::O) return TicTacToeState::O_WIN;
-		
-	}
-	//diagonal 2
-	if(grid.get_mark(0,2) == grid.get_mark(1,1) &&
-	   grid.get_mark(0,2) == grid.get_mark(2,0))
-	{
-		if(grid.get_mark(0,2) == Marks::X)       return TicTacToeState::X_WIN;
-		else if(grid.get_mark(0,2) == Marks::O)  return TicTacToeState::O_WIN;
-	}
-	
-	return TicTacToeState::NONE;
-}
+#include "state.h"
+#include "grid.h"
 
 class TicTacToeTerminal
 {
@@ -157,7 +45,7 @@ public:
 			size_t offset = key-'0';
 			if(m_grid.is_available(offset))
 			{
-				m_grid.set_mark(offset,Marks::X);
+				m_grid.set_mark(offset,TicTacToe::Marks::X);
 			}else
 			{
 				goto user_try_again;
@@ -196,7 +84,7 @@ public:
 		
 		if(m_grid.is_available(x,y))
 		{
-			m_grid.set_mark(x,y,Marks::O);
+			m_grid.set_mark(x,y,TicTacToe::Marks::O);
 		}else
 		{
 			goto ai_try_again;
@@ -204,20 +92,20 @@ public:
 	}
 	void update()
 	{
-		switch(check_state_winner_or_draw(m_grid))
+		switch(TicTacToe::check_state_winner_or_draw(m_grid))
 		{
-			case TicTacToeState::NONE:
+			case TicTacToe::State::NONE:
 				return;	//DO NOTHNG
 			break;
-			case TicTacToeState::X_WIN:
+			case TicTacToe::State::X_WIN:
 				m_score1 += 1;
 				m_grid.reset();
 			break;
-			case TicTacToeState::O_WIN:
+			case TicTacToe::State::O_WIN:
 				m_score2 += 2;
 				m_grid.reset();
 			break;
-			case TicTacToeState::DRAW:
+			case TicTacToe::State::DRAW:
 				m_grid.reset();
 			break;
 		}
@@ -232,13 +120,13 @@ public:
 			{
 				switch(m_grid.get_mark(y,x))
 				{
-					case Marks::EMPTY:
+					case TicTacToe::Marks::EMPTY:
 						fmt::print("[ ]");
 					break;
-					case Marks::X:
+					case TicTacToe::Marks::X:
 						fmt::print("[X]");
 					break;
-					case Marks::O:
+					case TicTacToe::Marks::O:
 						fmt::print("[O]");
 					break;
 				}
@@ -288,10 +176,10 @@ public:
 		}
 	}
 private:
-	Grid m_grid;
-	bool m_quit;
-	int  m_score1;
-	int  m_score2;
+	TicTacToe::Grid  m_grid;
+	bool             m_quit;
+	int              m_score1;
+	int              m_score2;
 };
 int main()
 {	

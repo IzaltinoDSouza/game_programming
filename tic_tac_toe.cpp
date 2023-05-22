@@ -55,7 +55,7 @@ public:
 	{
 		return m_grid[y][x];
 	}
-	bool is_available(size_t offset)
+	bool is_available(size_t offset) const
 	{
 		return m_grid[(offset-1) % 3][(offset-1) / 3] == Marks::EMPTY;
 	}
@@ -63,7 +63,7 @@ public:
 	{
 		return m_grid[y][x] == Marks::EMPTY;
 	}
-	bool no_more_available()
+	bool no_more_available() const
 	{
 		size_t total = 0;
 		for(size_t y = 0;y < 3;++y)
@@ -79,6 +79,61 @@ public:
 private:
 	Marks m_grid[3][3];
 };
+
+enum class TicTacToeState
+{
+	NONE,
+	X_WIN,
+	O_WIN,
+	DRAW
+};
+
+TicTacToeState check_state_winner_or_draw(const Grid & grid)
+{
+	//grid is full with X and O
+	if(grid.no_more_available()) return TicTacToeState::DRAW;
+	
+	//horizontal
+	for(size_t y = 0;y < 3;++y)
+	{
+		if(grid.get_mark(y,0) == grid.get_mark(y,1) &&
+		   grid.get_mark(y,0) == grid.get_mark(y,2))
+		{
+			if(grid.get_mark(y,0) == Marks::X)      return TicTacToeState::X_WIN;
+			else if(grid.get_mark(y,0) == Marks::O) return TicTacToeState::O_WIN;
+			
+		}
+	}
+
+	//vertical
+	for(size_t x = 0;x < 3;++x)
+	{
+		if(grid.get_mark(0,x) == grid.get_mark(1,x) &&
+		   grid.get_mark(0,x) == grid.get_mark(2,x))
+		{
+			if(grid.get_mark(0,x) == Marks::X)      return TicTacToeState::X_WIN;
+			else if(grid.get_mark(0,x) == Marks::O) return TicTacToeState::O_WIN;
+		}
+	}
+
+	//diagonal 1
+	if(grid.get_mark(0,0) == grid.get_mark(1,1) &&
+	   grid.get_mark(0,0) == grid.get_mark(2,2))
+	{
+		if(grid.get_mark(0,0) == Marks::X)      return TicTacToeState::X_WIN;
+		else if(grid.get_mark(0,0) == Marks::O) return TicTacToeState::O_WIN;
+		
+	}
+	//diagonal 2
+	if(grid.get_mark(0,2) == grid.get_mark(1,1) &&
+	   grid.get_mark(0,2) == grid.get_mark(2,0))
+	{
+		if(grid.get_mark(0,2) == Marks::X)       return TicTacToeState::X_WIN;
+		else if(grid.get_mark(0,2) == Marks::O)  return TicTacToeState::O_WIN;
+	}
+	
+	return TicTacToeState::NONE;
+}
 
 class TicTacToeTerminal
 {
@@ -149,77 +204,22 @@ public:
 	}
 	void update()
 	{
-		//grid is full with X and O
-		if(m_grid.no_more_available())
+		switch(check_state_winner_or_draw(m_grid))
 		{
-			m_grid.reset();
-		}
-	
-		//horizontal
-		for(size_t y = 0;y < 3;++y)
-		{
-			if(m_grid.get_mark(y,0) == m_grid.get_mark(y,1) &&
-			   m_grid.get_mark(y,0) == m_grid.get_mark(y,2))
-			{
-				if(m_grid.get_mark(y,0) == Marks::X)
-				{
-					m_score1 += 1;
-					m_grid.reset();
-				}else if(m_grid.get_mark(y,0) == Marks::O)
-				{
-					m_score2 += 1;
-					m_grid.reset();
-				}
-			}
-		}
-		
-		//vertical
-		for(size_t x = 0;x < 3;++x)
-		{
-			if(m_grid.get_mark(0,x) == m_grid.get_mark(1,x) &&
-			   m_grid.get_mark(0,x) == m_grid.get_mark(2,x))
-			{
-				if(m_grid.get_mark(0,x) == Marks::X)
-				{
-					m_score1 += 1;
-					m_grid.reset();
-				}else if(m_grid.get_mark(0,x) == Marks::O)
-				{
-					m_score2 += 1;
-					m_grid.reset();
-				}
-			}
-		}
-		
-		//diagonal 1
-		if(m_grid.get_mark(0,0) == m_grid.get_mark(1,1) &&
-		   m_grid.get_mark(0,0) == m_grid.get_mark(2,2))
-		{
-			if(m_grid.get_mark(0,0) == Marks::X)
-			{
+			case TicTacToeState::NONE:
+				return;	//DO NOTHNG
+			break;
+			case TicTacToeState::X_WIN:
 				m_score1 += 1;
 				m_grid.reset();
-			}
-			else if(m_grid.get_mark(0,0) == Marks::O)
-			{
-				m_score2 += 1;
+			break;
+			case TicTacToeState::O_WIN:
+				m_score2 += 2;
 				m_grid.reset();
-			}
-		}
-		//diagonal 2
-		if(m_grid.get_mark(0,2) == m_grid.get_mark(1,1) &&
-		   m_grid.get_mark(0,2) == m_grid.get_mark(2,0))
-		{
-			if(m_grid.get_mark(0,2) == Marks::X)
-			{
-				m_score2 += 1;
+			break;
+			case TicTacToeState::DRAW:
 				m_grid.reset();
-			}
-			else if(m_grid.get_mark(0,2) == Marks::O)
-			{
-				m_score2 += 1;
-				m_grid.reset();
-			}
+			break;
 		}
 	}
 	void render()

@@ -132,6 +132,7 @@ public:
 			m_grid.set_mark(x,y,TicTacToe::Marks::O);
 		}else
 		{
+			if(m_grid.no_more_available()) return;
 			goto ai_try_again;
 		}
 	}

@@ -3,6 +3,7 @@
 
 #include "state.h"
 #include "grid.h"
+#include "ai.h"
 
 struct MouseInput
 {
@@ -120,21 +121,7 @@ public:
 	}
 	void ai_input()
 	{
-		ai_try_again:
-		
-		srand(time(NULL));
-		size_t x = rand() % 3;
-		srand(time(NULL));
-		size_t y = rand() % 3;
-		
-		if(m_grid.is_available(x,y))
-		{
-			m_grid.set_mark(x,y,TicTacToe::Marks::O);
-		}else
-		{
-			if(m_grid.no_more_available()) return;
-			goto ai_try_again;
-		}
+		TicTacToe::ai_brute_force(m_grid);
 	}
 	void update()
 	{

@@ -48,16 +48,15 @@ namespace TicTacToe
 		}
 		bool no_more_available() const
 		{
-			size_t total = 0;
 			for(size_t y = 0;y < 3;++y)
 			{
 				for(size_t x = 0;x < 3;++x)
 				{
-					if(m_grid[y][x] != Marks::EMPTY)
-						++total;
+					if(m_grid[y][x] == Marks::EMPTY)
+						return false;
 				}
 			}
-			return total == 3*3;
+			return true;
 		}
 	private:
 		Marks m_grid[3][3];

@@ -121,7 +121,7 @@ public:
 	}
 	void ai_input()
 	{
-		TicTacToe::ai_brute_force(m_grid);
+		TicTacToe::ai_minimax(m_grid);
 	}
 	void update()
 	{

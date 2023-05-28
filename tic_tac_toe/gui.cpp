@@ -43,7 +43,39 @@ public:
 			}
 		}
 	}
-	
+	void draw_winner_or_draw(SDL_Renderer * renderer,
+	                         const TicTacToe::State & state)
+	{
+		SDL_SetRenderDrawColor(renderer,0,0,0,255);
+		SDL_RenderClear(renderer);
+		
+		for(int y = 0;y < 3;++y)
+		{
+			for(int x = 0;x < 3;++x)
+			{
+				switch(state)
+				{
+					case TicTacToe::State::DRAW:
+						SDL_SetRenderDrawColor(renderer,255,255,255,255);
+					break;
+					case TicTacToe::State::X_WIN:
+						SDL_SetRenderDrawColor(renderer,0,255,0,255);
+					break;
+					case TicTacToe::State::O_WIN:
+						SDL_SetRenderDrawColor(renderer,255,0,0,255);
+					break;
+				}
+
+				SDL_Rect rect = {(m_width*x)+k_spacing,
+								 (m_height*y)+k_spacing,
+								  m_width-(k_spacing*2),
+								  m_height-(k_spacing*2)};
+
+				SDL_RenderFillRect(renderer,&rect);
+			}
+		}
+		SDL_RenderPresent(renderer);
+	}
 	SDL_Rect grid_rect(int x,int y)
 	{
 		return SDL_Rect {(m_width*x)+k_spacing,(m_height*y)+k_spacing,
@@ -201,32 +233,13 @@ private:
 	}
 	void update()
 	{
-		switch(TicTacToe::check_state_winner_or_draw(m_grid))
-		{
-			case TicTacToe::State::NONE:
-			{
-				return;	//DO NOTHNG
-			}
-			break;
-			case TicTacToe::State::X_WIN:
-			{
-				m_quit = true;
-				SDL_Delay(1000);
-			}
-			break;
-			case TicTacToe::State::O_WIN:
-			{
-				m_quit = true;
-				SDL_Delay(1000);
-			}
-			break;
-			case TicTacToe::State::DRAW:
-			{
-				m_quit = true;
-				SDL_Delay(1000);
-			}
-			break;
-		}
+		const TicTacToe::State state = TicTacToe::check_state_winner_or_draw(m_grid);
+		if(state == TicTacToe::State::NONE) return;
+		
+		m_grid.reset();
+		m_grid_view.draw_winner_or_draw(m_renderer,state);
+		
+		SDL_Delay(3*1000);
 	}
 	void mouse_over(int x,int y)
 	{

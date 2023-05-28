@@ -5,6 +5,57 @@
 #include "grid.h"
 #include "ai.h"
 
+class GridView
+{
+public:
+	GridView(const TicTacToe::Grid & grid,int width,int height)
+	: m_grid{grid},
+	  m_width{width/3},
+	  m_height{height/3}
+	{
+	
+	}
+	void draw(SDL_Renderer * renderer)
+	{
+		for(int y = 0;y < 3;++y)
+		{
+			for(int x = 0;x < 3;++x)
+			{
+				switch(m_grid.get_mark(x,y))
+				{
+					case TicTacToe::Marks::EMPTY:
+						SDL_SetRenderDrawColor(renderer,255,255,255,255);
+					break;
+					case TicTacToe::Marks::X:
+						SDL_SetRenderDrawColor(renderer,0,255,0,255);
+					break;
+					case TicTacToe::Marks::O:
+						SDL_SetRenderDrawColor(renderer,255,0,0,255);
+					break;
+				}
+
+				SDL_Rect rect = {(m_width*x)+k_spacing,
+								 (m_height*y)+k_spacing,
+								  m_width-(k_spacing*2),
+								  m_height-(k_spacing*2)};
+
+				SDL_RenderFillRect(renderer,&rect);
+			}
+		}
+	}
+	
+	SDL_Rect grid_rect(int x,int y)
+	{
+		return SDL_Rect {(m_width*x)+k_spacing,(m_height*y)+k_spacing,
+				          m_width-(k_spacing*2),m_height-(k_spacing*2)};
+	}
+private:
+	const TicTacToe::Grid & m_grid;
+	int m_width;
+	int m_height;
+	const int k_spacing{5};
+};
+
 struct MouseInput
 {
 	int x;
@@ -15,7 +66,8 @@ class TicTacToeSDL
 {
 public:
 	TicTacToeSDL(size_t width,size_t height,const char * title = "TicTacToe")
-	 : m_quit{false}
+	 : m_quit{false},
+	   m_grid_view{m_grid,static_cast<int>(width),static_cast<int>(height)}
 	{
 		if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
 		{
@@ -74,7 +126,7 @@ public:
 		SDL_SetRenderDrawColor(m_renderer,0,0,0,255);
 		SDL_RenderClear(m_renderer);
 		
-		draw_grid();
+		m_grid_view.draw(m_renderer);
 		
 		mouse_over(m_mouse_input.x,m_mouse_input.y);
 		
@@ -83,22 +135,12 @@ public:
 	void process_input()
 	{
 		m_user_choose = false;
-		
-		int width,height;
-		SDL_GetWindowSize(m_window,&width,&height);
-
-		int spacing = 5;
-		width  /= 3;
-		height /= 3;
 
 		for(int posy = 0;posy < 3;++posy)
 		{
 			for(int posx = 0;posx < 3;++posx)
 			{
-				SDL_Rect rect = {(width*posx)+spacing,
-						         (height*posy)+spacing,
-						          width-(spacing*2),
-						          height-(spacing*2)};
+				const SDL_Rect rect = m_grid_view.grid_rect(posx,posy);
 				
 				 if(m_mouse_input.click)
 				 {
@@ -181,27 +223,18 @@ private:
 	SDL_Event       m_event;
 	bool            m_quit;
 	TicTacToe::Grid m_grid;
+	GridView        m_grid_view;
 	uint32_t        m_target_fps_time{static_cast<uint32_t>(1000.0/30.0)};
 	MouseInput      m_mouse_input;
 	bool            m_user_choose;
 	
 	void mouse_over(int x,int y)
-	{	
-		int width,height;
-		SDL_GetWindowSize(m_window,&width,&height);
-		
-		int spacing = 5;
-		width  /= 3;
-		height /= 3;
-		
+	{
 		for(int posy = 0;posy < 3;++posy)
 		{
 			for(int posx = 0;posx < 3;++posx)
 			{
-				SDL_Rect rect = {(width*posx)+spacing,
-				                 (height*posy)+spacing,
-				                  width-(spacing*2),
-				                  height-(spacing*2)};
+				const SDL_Rect rect = m_grid_view.grid_rect(posx,posy);
 				 
 				 if(x >= rect.x && x <= rect.x + rect.w && 
 				    y >= rect.y && y <= rect.y + rect.h)
@@ -221,41 +254,7 @@ private:
 			}
 		}
 	}
-	void draw_grid()
-	{
-		int width,height;
-		SDL_GetWindowSize(m_window,&width,&height);
-		
-		int spacing = 5;
-		width  /= 3;
-		height /= 3;
-		
-		for(int y = 0;y < 3;++y)
-		{
-			for(int x = 0;x < 3;++x)
-			{
-				switch(m_grid.get_mark(x,y))
-				{
-					case TicTacToe::Marks::EMPTY:
-						SDL_SetRenderDrawColor(m_renderer,255,255,255,255);
-					break;
-					case TicTacToe::Marks::X:
-						SDL_SetRenderDrawColor(m_renderer,0,255,0,255);
-					break;
-					case TicTacToe::Marks::O:
-						SDL_SetRenderDrawColor(m_renderer,255,0,0,255);
-					break;
-				}
-			
-				SDL_Rect rect = {(width*x)+spacing,
-				                 (height*y)+spacing,
-				                  width-(spacing*2),
-				                  height-(spacing*2)};
-
-				SDL_RenderFillRect(m_renderer,&rect);
-			}
-		}
-	}
+	
 };
 
 int main()

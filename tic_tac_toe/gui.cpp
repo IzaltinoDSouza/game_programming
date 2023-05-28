@@ -98,6 +98,40 @@ public:
 		SDL_DestroyWindow(m_window);
 		SDL_Quit();
 	}
+	void run()
+	{		
+		while(!m_quit)
+		{
+			uint32_t frame_start = SDL_GetTicks();			
+					
+			input();
+
+			process_input();
+
+			if(m_user_choose)
+			{
+				ai_input();
+			}
+
+			update();
+			render();
+			
+			uint32_t frame_time = SDL_GetTicks() - frame_start;
+			if(frame_time < m_target_fps_time)
+				SDL_Delay(m_target_fps_time - frame_time);
+		}
+	}
+private:
+	SDL_Window   *  m_window;
+	SDL_Renderer *  m_renderer; 
+	SDL_Event       m_event;
+	bool            m_quit;
+	TicTacToe::Grid m_grid;
+	GridView        m_grid_view;
+	uint32_t        m_target_fps_time{static_cast<uint32_t>(1000.0/30.0)};
+	MouseInput      m_mouse_input;
+	bool            m_user_choose;
+	
 	void input()
 	{
 		while(SDL_PollEvent(&m_event))
@@ -194,40 +228,6 @@ public:
 			break;
 		}
 	}
-	void run()
-	{		
-		while(!m_quit)
-		{
-			uint32_t frame_start = SDL_GetTicks();			
-					
-			input();
-
-			process_input();
-
-			if(m_user_choose)
-			{
-				ai_input();
-			}
-
-			update();
-			render();
-			
-			uint32_t frame_time = SDL_GetTicks() - frame_start;
-			if(frame_time < m_target_fps_time)
-				SDL_Delay(m_target_fps_time - frame_time);
-		}
-	}
-private:
-	SDL_Window   *  m_window;
-	SDL_Renderer *  m_renderer; 
-	SDL_Event       m_event;
-	bool            m_quit;
-	TicTacToe::Grid m_grid;
-	GridView        m_grid_view;
-	uint32_t        m_target_fps_time{static_cast<uint32_t>(1000.0/30.0)};
-	MouseInput      m_mouse_input;
-	bool            m_user_choose;
-	
 	void mouse_over(int x,int y)
 	{
 		for(int posy = 0;posy < 3;++posy)
